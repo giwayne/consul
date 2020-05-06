@@ -1,4 +1,4 @@
-export default function(visitable, clickable, text, attribute, collection, page, filter) {
+export default function(visitable, clickable, text, attribute, collection, filter) {
   const service = {
     name: text('a span:nth-child(2)'),
     service: clickable('a'),
@@ -11,7 +11,6 @@ export default function(visitable, clickable, text, attribute, collection, page,
     dcs: collection('[data-test-datacenter-picker]', {
       name: clickable('a'),
     }),
-    navigation: page.navigation,
     filter: filter,
     home: clickable('[data-test-home]'),
   };
