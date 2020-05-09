@@ -7,36 +7,19 @@ DEBUG=${DEBUG:-}
 
 # ENVOY_VERSION to run each test against
 ENVOY_VERSION=${ENVOY_VERSION:-"1.14.1"}
+export ENVOY_VERSION
 
 CASE_DIR="${CASE_DIR?CASE_DIR must be set to the path of the test case}"
 CASE_NAME=$( basename $CASE_DIR | cut -c6- )
 export CASE_NAME
+
+export LOG_DIR="workdir/logs/${CASE_DIR}/${ENVOY_VERSION}"
 
 if [ ! -z "$DEBUG" ] ; then
   set -x
 fi
 
 source helpers.bash
-
-RESULT=1
-CLEANED_UP=0
-
-function cleanup {
-  local STATUS="$?"
-
-  if [ "$CLEANED_UP" != 0 ] ; then
-    return
-  fi
-  CLEANED_UP=1
-
-  if [ "$STATUS" -ne 0 ]
-  then
-    capture_logs
-  fi
-
-  docker-compose down --volumes --timeout 0 --remove-orphans
-}
-trap cleanup EXIT
 
 function command_error {
   echo "ERR: command exited with status $1" 1>&2
@@ -288,23 +271,4 @@ function runTest {
   return $TESTRESULT
 }
 
-
-RESULT=0
-
-# Cleanup from any previous unclean runs.
-docker-compose down --volumes --timeout 0 --remove-orphans
-
-# Start the volume container
-docker-compose up -d workdir
-
-export LOG_DIR="workdir/logs/${CASE_DIR}/${ENVOY_VERSION}"
-
-if ! runTest; then
-  RESULT=1
-fi
-
-cleanup
-
-if [ $RESULT -ne 0 ] ; then
-  exit 1
-fi
+runTest
